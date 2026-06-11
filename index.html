@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=900">
+<title>Night Market — Street Food Rush</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#160d07;
+    --panel:#241710;
+    --panel-2:#2e1d12;
+    --grey:#3a2c22;
+    --orange:#ff7a18;
+    --orange-bright:#ff9f1c;
+    --yellow:#ffd24a;
+    --brown:#6b4226;
+    --green:#3ddc84;
+    --red:#ff4d4d;
+    --text:#f6ead9;
+    --muted:#a98f78;
+    --font-body:'Plus Jakarta Sans', system-ui, sans-serif;
+    --font-display:'Bricolage Grotesque', 'Plus Jakarta Sans', sans-serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:radial-gradient(circle at 50% -10%, #3a2110 0%, var(--bg) 55%);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    min-width:900px;
+    overflow-x:auto;
+    user-select:none;
+  }
+  #app{
+    position:relative;
+    width:100%;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .screen{display:none; width:100%;}
+  .overlay{display:none;}
+  #app.screen-start #start-screen{display:flex;}
+  #app.screen-game  #game-screen{display:flex;}
+  #app.screen-pause #game-screen{display:flex;}
+  #app.screen-pause #pause-screen{display:flex;}
+  #app.screen-end   #end-screen{display:flex;}
+
+  /* ---------- START ---------- */
+  #start-screen{
+    flex-direction:column; align-items:center; justify-content:center;
+    gap:22px; padding:60px; text-align:center; min-height:100vh;
+  }
+  .title{ font-family:var(--font-display); font-size:68px; font-weight:800; letter-spacing:-1.5px; line-height:.95;
+    color:var(--orange-bright);
+    text-shadow:0 0 24px rgba(255,122,24,.45), 0 4px 0 #5a2c0e;}
+  .subtitle{ font-size:20px; color:var(--muted); margin-top:-10px;}
+  .best-box{ display:flex; gap:40px; margin:14px 0 6px; font-size:20px;}
+  .best-box .label{ color:var(--muted); font-size:14px; text-transform:uppercase; letter-spacing:2px;}
+  .best-box .val{ font-family:var(--font-display); font-size:30px; font-weight:800; color:var(--yellow); font-variant-numeric:tabular-nums;}
+  .menu-emojis{ font-size:52px; letter-spacing:6px; }
+  .start-footer{ margin-top:28px; display:flex; align-items:center; gap:10px;
+    font-size:13px; color:var(--muted); flex-wrap:wrap; justify-content:center;}
+  .footer-credit{ display:inline-flex; align-items:center; gap:7px;
+    color:var(--muted); text-decoration:none; transition:color .15s;}
+  .footer-credit:hover{ color:var(--yellow); }
+  .footer-favicon{ width:18px; height:18px; display:block; }
+  .footer-sep{ opacity:.5; }
+  .footer-built{ opacity:.85; }
+  .btn{
+    font-family:var(--font-display);
+    cursor:pointer; border:none; border-radius:12px;
+    padding:16px 34px; font-size:22px; font-weight:700; letter-spacing:-.3px;
+    color:#2a1402; background:linear-gradient(180deg,var(--yellow),var(--orange));
+    box-shadow:0 6px 0 #8a3d08, 0 10px 22px rgba(0,0,0,.4);
+    transition:transform .08s, box-shadow .08s;
+  }
+  .btn:hover{ filter:brightness(1.06); }
+  .btn:active{ transform:translateY(4px); box-shadow:0 2px 0 #8a3d08; }
+  .btn:disabled{ opacity:.5; cursor:default; }
+  .btn.secondary{ background:linear-gradient(180deg,#6b4226,#43271646); color:var(--text);
+    box-shadow:0 6px 0 #2a1810, 0 10px 22px rgba(0,0,0,.4); border:1px solid #6b4226;}
+
+  /* ---------- GAME ---------- */
+  #game-screen{
+    flex-direction:column; align-items:center;
+    width:100%; max-width:1100px; padding:18px 22px 30px; gap:16px;
+  }
+  .topbar{
+    width:100%; display:grid;
+    grid-template-columns:1fr 1fr 1fr auto;
+    align-items:center; gap:18px;
+    background:var(--panel); border:1px solid #3a2415; border-radius:14px;
+    padding:12px 20px;
+  }
+  .tb-block{ display:flex; flex-direction:column; }
+  .tb-label{ font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted);}
+  .tb-value{ font-family:var(--font-display); font-size:30px; font-weight:800; line-height:1.05;
+    font-variant-numeric:tabular-nums; letter-spacing:-.5px;}
+  #score-val{ color:var(--yellow); }
+  .stars{ font-size:30px; letter-spacing:4px;}
+  .star{ display:inline-block; }
+  .star-unearned{ color:#5a4636; transition:none; }
+  .star-earned{ color:var(--yellow); text-shadow:0 0 14px rgba(255,210,74,.9);
+    animation:starPulse .6s ease; }
+  @keyframes starPulse{
+    0%{ transform:scale(.6); filter:brightness(2.4);}
+    50%{ transform:scale(1.5); filter:brightness(2);}
+    100%{ transform:scale(1); filter:brightness(1);}
+  }
+  #time-val{ color:var(--orange-bright); }
+  .pause-btn{ cursor:pointer; border:1px solid #6b4226; background:var(--panel-2);
+    color:var(--text); font-size:16px; font-weight:700; border-radius:10px; padding:12px 18px;}
+  .pause-btn:hover{ background:#3a2415;}
+  .pause-btn:disabled{ opacity:.4; cursor:default;}
+  .mute-btn{ width:46px; padding:12px 0; text-align:center; font-size:18px; }
+
+  /* stations grid 2x3 */
+  .stations{
+    width:100%;
+    display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(2,1fr);
+    gap:16px;
+  }
+  .station{
+    position:relative; overflow:hidden;
+    border-radius:16px; padding:18px 12px 22px;
+    min-height:150px; cursor:pointer; text-align:center;
+    background:var(--grey); border:2px solid #4a382b;
+    transition:none;
+  }
+  .station-label{ font-size:13px; letter-spacing:1px; color:var(--muted); text-transform:uppercase; font-weight:700;}
+  .station-emoji{ font-size:62px; line-height:1.2; filter:grayscale(.4) brightness(.85); }
+  .station-status{ height:30px; font-size:28px; }
+  .station-progress{
+    position:absolute; left:0; bottom:0; height:4px; width:0%;
+    background:var(--orange-bright);
+  }
+  .station::after{ /* dark progress track */
+    content:""; position:absolute; left:0; bottom:0; height:4px; width:100%;
+    background:#1c120b; z-index:0;
+  }
+  .station-progress{ z-index:1; }
+  .station-empty{ background:var(--grey); border-color:#4a382b; }
+  .station-cooking{
+    background:linear-gradient(180deg,#6b3410,#3a1f0d);
+    border-color:var(--orange);
+    box-shadow:0 0 18px rgba(255,122,24,.35) inset;
+    transition:background .3s, border-color .3s, box-shadow .3s;
+  }
+  .station-cooking .station-emoji{ filter:none; animation:wiggle .8s ease-in-out infinite; }
+  @keyframes wiggle{ 0%,100%{transform:rotate(-4deg);} 50%{transform:rotate(4deg);} }
+  .station-ready{
+    background:linear-gradient(180deg,#1e5a36,#123a24);
+    border-color:var(--green);
+    box-shadow:0 0 22px rgba(61,220,132,.45);
+    transition:background .3s, border-color .3s, box-shadow .3s;
+  }
+  .station-ready .station-emoji{ filter:none; }
+  .station-held{
+    background:linear-gradient(180deg,#5a5044,#2e2a24);
+    border-color:#fff;
+    box-shadow:0 0 26px rgba(255,255,255,.55);
+    transition:background .3s, border-color .3s, box-shadow .3s;
+  }
+  .station-held .station-emoji{ filter:none; transform:translateY(-2px); }
+
+  /* center row */
+  .center-row{
+    width:100%; display:grid; grid-template-columns:1fr 1.3fr 1fr;
+    align-items:center; gap:16px;
+  }
+  .center-spacer{}
+  .zone{
+    cursor:pointer; border-radius:16px; padding:14px; text-align:center;
+    border:2px dashed #5a4636; background:var(--panel);
+  }
+  .zone .zone-label{ font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted);}
+  .zone .zone-icon{ font-size:46px; line-height:1.3; }
+  .trash-zone{ justify-self:start; width:130px; }
+  .trash-flash{ background:#7d7d7d !important; border-color:#bbb !important; }
+  .bag{
+    justify-self:center; width:200px; position:relative;
+    border-style:solid; transition:none;
+  }
+  .bag-empty .zone-icon{ filter:grayscale(.6) brightness(.7); opacity:.7;}
+  .bag-loaded{ border-color:var(--yellow); background:linear-gradient(180deg,#4a3a18,#2e2410);
+    box-shadow:0 0 20px rgba(255,210,74,.4);}
+  .bag-item{ font-size:34px; height:40px; margin-top:-4px;}
+
+  /* slots */
+  .slots{ width:100%; display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  .slot{
+    position:relative; border-radius:16px; padding:16px 12px 18px;
+    min-height:150px; cursor:pointer; text-align:center;
+    background:var(--grey); border:2px solid #4a382b; transition:none;
+  }
+  .slot-empty{ background:#241a13; border-color:#3a2c22; opacity:.55; }
+  .slot-active{
+    background:var(--panel-2); border-color:#fff;
+    box-shadow:0 0 16px rgba(255,255,255,.18);
+    transition:border-color .2s, box-shadow .2s, background .2s;
+  }
+  .slot-expired{ background:linear-gradient(180deg,#5a1f14,#3a140d); border-color:var(--red); }
+  .slot-item{ font-size:56px; line-height:1.1; height:64px;}
+  .slot-customer{ font-size:30px; height:38px; }
+  .slot-bar-track{ height:10px; background:#160f0a; border-radius:6px; overflow:hidden; margin-top:6px;}
+  .slot-bar{ height:100%; width:100%; border-radius:6px; }
+  .bar-green{ background:var(--green); }
+  .bar-yellow{ background:var(--yellow); }
+  .bar-red{ background:var(--red); }
+  .slot-empty .slot-bar-track{ visibility:hidden; }
+  .slot-correct{ animation:flashGreen .6s ease; }
+  .slot-wrong{ animation:flashRed .6s ease; }
+  .slot-expired.slot-expired{ /* tint already set */ }
+  @keyframes flashGreen{ 0%{box-shadow:0 0 0 rgba(61,220,132,0);} 30%{box-shadow:0 0 30px 6px rgba(61,220,132,.9); background:#1e5a36;} 100%{box-shadow:0 0 0 rgba(61,220,132,0);} }
+  @keyframes flashRed{
+    0%,100%{ transform:translateX(0); }
+    15%{ transform:translateX(-8px);} 30%{ transform:translateX(8px);}
+    45%{ transform:translateX(-6px);} 60%{ transform:translateX(6px);}
+    75%{ transform:translateX(-3px);}
+    0%{box-shadow:0 0 30px 6px rgba(255,77,77,.9);}
+  }
+
+  /* float text */
+  #float-layer{ position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:50;}
+  .float-text{ position:absolute; transform:translate(-50%,-50%); font-weight:800; font-size:20px;
+    animation:floatUp 1s ease-out forwards; white-space:nowrap;
+    text-shadow:0 2px 6px rgba(0,0,0,.8);}
+  @keyframes floatUp{ from{opacity:1;} to{opacity:0; transform:translate(-50%,calc(-50% - 40px));} }
+  .float-good{ color:#fff; } .float-bad{ color:var(--red); }
+  .ft-tip{ color:var(--yellow); }
+
+  /* pause + end overlays */
+  #pause-screen{
+    position:absolute; inset:0; z-index:80;
+    background:rgba(8,4,2,.78); backdrop-filter:blur(2px);
+    flex-direction:column; align-items:center; justify-content:center; gap:22px;
+  }
+  .overlay-title{ font-family:var(--font-display); font-size:50px; font-weight:800; letter-spacing:-1px; color:var(--orange-bright);}
+  #end-screen{
+    flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; padding:60px; text-align:center; min-height:100vh;
+  }
+  .end-stat{ font-size:22px; color:var(--muted);}
+  .end-stat b{ font-family:var(--font-display); color:var(--text); font-size:30px; font-variant-numeric:tabular-nums;}
+  #end-stars{ font-size:54px; letter-spacing:6px; color:var(--yellow); }
+  #end-newbest{ font-size:30px; font-weight:800; color:var(--yellow);
+    text-shadow:0 0 18px rgba(255,210,74,.7); }
+  #end-msg{ font-size:24px; color:var(--orange-bright); font-weight:700;}
+  .btn-row{ display:flex; gap:18px; margin-top:14px; }
+</style>
+</head>
+<body>
+<div id="app" class="screen-start">
+
+  <!-- START -->
+  <div id="start-screen" class="screen">
+    <div class="menu-emojis">🍚 🍜 🍢</div>
+    <div class="title">Night Market</div>
+    <div class="subtitle">Street Food Rush</div>
+    <div class="best-box">
+      <div class="tb-block" style="align-items:center;">
+        <span class="label">Best Score</span>
+        <span class="val" id="start-best-score">—</span>
+      </div>
+      <div class="tb-block" style="align-items:center;">
+        <span class="label">Best Stars</span>
+        <span class="val" id="start-best-stars">—</span>
+      </div>
+    </div>
+    <button class="btn" id="btn-start">Start Game</button>
+    <div class="subtitle" style="font-size:14px; max-width:520px;">
+      Click a stall to cook → click the ready stall to grab it → click 🛍️ to bag it →
+      click a customer to deliver. Beat the clock for tips and stars!
+    </div>
+    <footer class="start-footer">
+      <a class="footer-credit" href="https://mattryanyu.github.io/" target="_blank" rel="noopener">
+        <img src="favicon-clr.svg" alt="" class="footer-favicon">
+        <span>Matt Yu 2026</span>
+      </a>
+      <span class="footer-sep">·</span>
+      <span class="footer-built">Built with Claude Code (Opus 4.8)</span>
+    </footer>
+  </div>
+
+  <!-- GAME -->
+  <div id="game-screen" class="screen">
+    <div class="topbar">
+      <div class="tb-block">
+        <span class="tb-label">Score</span>
+        <span class="tb-value" id="score-val">0</span>
+      </div>
+      <div class="tb-block">
+        <span class="tb-label">Stars</span>
+        <span class="stars">
+          <span class="star star-unearned" id="star-0">☆</span><span class="star star-unearned" id="star-1">☆</span><span class="star star-unearned" id="star-2">☆</span>
+        </span>
+      </div>
+      <div class="tb-block">
+        <span class="tb-label">Time</span>
+        <span class="tb-value" id="time-val">2:00</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="pause-btn mute-btn" id="mute-btn">🔊</button>
+        <button class="pause-btn" id="pause-btn">⏸ Pause</button>
+      </div>
+    </div>
+
+    <div class="stations" id="stations"></div>
+
+    <div class="center-row">
+      <div class="zone trash-zone" id="trash">
+        <div class="zone-label">Trash</div>
+        <div class="zone-icon">🗑️</div>
+      </div>
+      <div class="zone bag bag-empty" id="bag">
+        <div class="zone-label">Bag</div>
+        <div class="zone-icon">🛍️</div>
+        <div class="bag-item"></div>
+      </div>
+      <div class="center-spacer"></div>
+    </div>
+
+    <div class="slots" id="slots"></div>
+  </div>
+
+  <!-- PAUSE -->
+  <div id="pause-screen" class="overlay">
+    <div class="overlay-title">⏸ Paused</div>
+    <div class="btn-row">
+      <button class="btn" id="btn-resume">Resume</button>
+      <button class="btn secondary" id="btn-restart">Restart</button>
+    </div>
+  </div>
+
+  <!-- END -->
+  <div id="end-screen" class="screen">
+    <div class="overlay-title">Time's Up! ⏰</div>
+    <div id="end-newbest">🏆 New Best!</div>
+    <div id="end-stars">⭐⭐⭐</div>
+    <div id="end-msg">So close! Keep practicing!</div>
+    <div class="end-stat">Score: <b id="end-score">0</b></div>
+    <div class="end-stat">Tips: <b id="end-tips">0</b></div>
+    <div class="btn-row" id="end-norm-btns">
+      <button class="btn" id="btn-playagain">Play Again</button>
+      <button class="btn secondary" id="btn-menu">Main Menu</button>
+    </div>
+    <div class="btn-row" id="end-low-btns">
+      <button class="btn" id="btn-tryagain">Try Again</button>
+    </div>
+  </div>
+
+  <div id="float-layer"></div>
+</div>
+
+<script>
+"use strict";
+
+/* ===================== CONSTANTS ===================== */
+var GAME_DURATION = 120000;   // 2 minutes
+var SLOT_TIME     = 25000;
+var IDLE_TIME     = 12000;
+var REFILL_TIME   = 2000;
+var FLASH_TIME    = 600;
+var EXPIRED_TIME  = 600;
+var MISS_PENALTY  = 10;
+
+var ITEMS = {
+  rice:   { emoji:"🍚", label:"Fried Rice",   cook:5000  },
+  noodle: { emoji:"🍜", label:"Noodles",      cook:7000  },
+  satay:  { emoji:"🍢", label:"Satay", cook:10000 }
+};
+var STATION_TYPES = ["rice","noodle","satay","rice","noodle","satay"];
+var ORDER_POOL = ["rice","noodle","satay"];
+
+/* ===================== STATE ===================== */
+var gameState = {
+  screen:"start",
+  score:0, tips:0, stars:0,
+  gameOver:false,
+  heldItem:null, heldStation:null,
+  bag:{ state:"empty", item:null },
+  stations:[],
+  slots:[],
+  gameTimer:null, gameTimeRemaining:GAME_DURATION,
+  trashFlashTimer:null,
+  pausedTimers:{}
+};
+
+function makeStations(){
+  return STATION_TYPES.map(function(t,i){
+    return { id:i, type:t, cookFull:ITEMS[t].cook, state:"empty",
+      cookTimer:null, cookStartedAt:0,
+      idleTimer:null, idleStartedAt:0 };
+  });
+}
+function makeSlots(){
+  return [0,1,2].map(function(i){
+    return { id:i, state:"empty", order:null, msRemaining:SLOT_TIME, flash:null,
+      countdownTimer:null,
+      refillTimer:null, refillStartedAt:0,
+      expiredTimer:null, expiredStartedAt:0,
+      flashTimer:null };
+  });
+}
+
+function resetGameState(){
+  cancelAllTimers();
+  gameState.stations = makeStations();
+  gameState.slots = makeSlots();
+  gameState.bag = { state:"empty", item:null };
+  gameState.heldItem = null; gameState.heldStation = null;
+  gameState.score = 0; gameState.tips = 0; gameState.stars = 0;
+  gameState.gameOver = false;
+  gameState.gameTimeRemaining = GAME_DURATION;
+  gameState.pausedTimers = {};
+}
+
+/* ===================== HELPERS ===================== */
+function randomOrder(){ return ORDER_POOL[Math.floor(Math.random()*ORDER_POOL.length)]; }
+function now(){ return performance.now(); }
+function computeTip(ms){ var s=ms/1000; return Math.min(50, Math.round(50*Math.floor(s)/25)); }
+function barColor(ms){ return ms>15000 ? "bar-green" : (ms>8000 ? "bar-yellow" : "bar-red"); }
+function ratingFor(score){ return score>=2000?3 : score>=1000?2 : score>=500?1 : 0; }
+function setScreen(name){ gameState.screen=name; document.getElementById("app").className="screen-"+name; }
+
+/* ===================== STORAGE ===================== */
+function loadBest(){
+  try{
+    var s=parseInt(localStorage.getItem("streetfood_bestScore"),10)||0;
+    var st=parseInt(localStorage.getItem("streetfood_bestStars"),10)||0;
+    return { score:s, stars:st };
+  }catch(e){ return { score:0, stars:0 }; }
+}
+function saveBest(score, stars){
+  try{
+    localStorage.setItem("streetfood_bestScore", String(score));
+    localStorage.setItem("streetfood_bestStars", String(stars));
+  }catch(e){ /* ignore */ }
+}
+
+/* ===================== DOM BUILD ===================== */
+function buildBoard(){
+  var st=document.getElementById("stations");
+  st.innerHTML="";
+  gameState.stations.forEach(function(s){
+    var card=document.createElement("div");
+    card.className="station station-empty";
+    card.id="station-"+s.id;
+    card.innerHTML=
+      '<div class="station-label">'+ITEMS[s.type].label+'</div>'+
+      '<div class="station-emoji">'+ITEMS[s.type].emoji+'</div>'+
+      '<div class="station-status"></div>'+
+      '<div class="station-progress"></div>';
+    card.addEventListener("click", function(){ clickStation(s.id); });
+    st.appendChild(card);
+  });
+  var sl=document.getElementById("slots");
+  sl.innerHTML="";
+  gameState.slots.forEach(function(s){
+    var card=document.createElement("div");
+    card.className="slot slot-empty";
+    card.id="slot-"+s.id;
+    card.innerHTML=
+      '<div class="slot-item"></div>'+
+      '<div class="slot-customer"></div>'+
+      '<div class="slot-bar-track"><div class="slot-bar bar-green"></div></div>';
+    card.addEventListener("click", function(){ clickSlot(s.id); });
+    sl.appendChild(card);
+  });
+}
+
+/* ===================== RENDER ===================== */
+function render(){
+  gameState.stations.forEach(function(s){
+    var card=document.getElementById("station-"+s.id);
+    if(!card) return;
+    card.className="station station-"+s.state;
+    card.querySelector(".station-status").textContent = (s.state==="held") ? "✋" : "";
+    if(s.state!=="cooking"){
+      card.querySelector(".station-progress").style.width="0%";
+    }
+  });
+
+  gameState.slots.forEach(function(s){
+    var card=document.getElementById("slot-"+s.id);
+    if(!card) return;
+    var cls="slot slot-"+s.state;
+    if(s.flash) cls+=" slot-"+s.flash;
+    card.className=cls;
+    var item=card.querySelector(".slot-item");
+    var cust=card.querySelector(".slot-customer");
+    var bar=card.querySelector(".slot-bar");
+    if(s.state==="empty"){
+      item.textContent=""; cust.textContent=""; bar.style.width="0%";
+    } else {
+      item.textContent=ITEMS[s.order].emoji;
+      if(s.flash==="wrong") cust.textContent="😤";
+      else if(s.state==="expired") cust.textContent="😞";
+      else cust.textContent = (s.msRemaining>8000) ? "😊" : "😰";
+      if(s.state==="active"){
+        bar.style.width=(s.msRemaining/SLOT_TIME*100)+"%";
+        bar.className="slot-bar "+barColor(s.msRemaining);
+      } else {
+        bar.style.width="0%";
+      }
+    }
+  });
+
+  var bag=document.getElementById("bag");
+  bag.className="zone bag bag-"+gameState.bag.state;
+  bag.querySelector(".bag-item").textContent =
+    (gameState.bag.state==="loaded") ? ITEMS[gameState.bag.item].emoji : "";
+}
+
+/* score + stars are DIRECT DOM updates (outside render) */
+function addScore(points, tip){
+  gameState.score = Math.max(0, gameState.score + points);
+  gameState.tips  += tip;
+  document.getElementById("score-val").textContent = gameState.score;
+  updateStars();
+}
+function updateStars(){
+  var target = ratingFor(gameState.score);
+  for(var i=0;i<3;i++){
+    var star=document.getElementById("star-"+i);
+    if(i<target && !star.classList.contains("star-earned")){
+      star.classList.remove("star-unearned");
+      star.classList.add("star-earned");
+      star.textContent="⭐";
+      star.style.animation="none"; void star.offsetWidth; star.style.animation="";
+      sfxStar();
+    }
+  }
+  gameState.stars=target;
+}
+function resetStarsUI(){
+  for(var i=0;i<3;i++){
+    var star=document.getElementById("star-"+i);
+    star.classList.remove("star-earned");
+    star.classList.add("star-unearned");
+    star.textContent="☆";
+    star.style.animation="";
+  }
+}
+
+/* ===================== FLOAT TEXT ===================== */
+function floatText(slot, main, tip, type){
+  var card=document.getElementById("slot-"+slot.id);
+  var layer=document.getElementById("float-layer");
+  var r=card.getBoundingClientRect();
+  var a=document.getElementById("app").getBoundingClientRect();
+  var div=document.createElement("div");
+  div.className="float-text "+(type==="bad"?"float-bad":"float-good");
+  if(tip){ div.innerHTML='<span class="ft-main">'+main+'</span> <span class="ft-tip">'+tip+'</span>'; }
+  else { div.textContent=main; }
+  div.style.left=(r.left-a.left+r.width/2)+"px";
+  div.style.top =(r.top -a.top +r.height/2)+"px";
+  layer.appendChild(div);
+  setTimeout(function(){ if(div.parentNode) div.parentNode.removeChild(div); }, 1000);
+}
+
+/* ===================== STATION TIMERS ===================== */
+function startCooking(s, remaining){
+  if(remaining===undefined) remaining=s.cookFull;
+  s.state="cooking";
+  s.cookStartedAt = now() - (s.cookFull - remaining);
+  var prog=document.querySelector("#station-"+s.id+" .station-progress");
+  render();
+  if(prog) prog.style.width = ((s.cookFull-remaining)/s.cookFull*100)+"%";
+  s.cookTimer=setInterval(function(){
+    if(gameState.gameOver){ clearInterval(s.cookTimer); s.cookTimer=null; return; }
+    var elapsed=now()-s.cookStartedAt;
+    var pct=Math.min(100, elapsed/s.cookFull*100);
+    var el=document.querySelector("#station-"+s.id+" .station-progress");
+    if(el) el.style.width=pct+"%";
+    if(elapsed>=s.cookFull){
+      clearInterval(s.cookTimer); s.cookTimer=null;
+      s.state="ready";
+      sfxReady();
+      render();
+      startIdle(s, IDLE_TIME);
+    }
+  },50);
+}
+function startIdle(s, remaining){
+  if(remaining===undefined) remaining=IDLE_TIME;
+  s.idleStartedAt = now() - (IDLE_TIME - remaining);
+  s.idleTimer=setTimeout(function(){
+    if(gameState.gameOver) return;
+    s.idleTimer=null;
+    if(s.state==="ready"){ s.state="empty"; render(); }
+  }, remaining);
+}
+
+/* ===================== SLOT TIMERS ===================== */
+function activateSlot(s){
+  s.state="active"; s.order=randomOrder(); s.msRemaining=SLOT_TIME; s.flash=null;
+  render();
+  startCountdown(s);
+}
+function startCountdown(s){
+  clearInterval(s.countdownTimer);
+  s.countdownTimer=setInterval(function(){
+    if(gameState.gameOver){ clearInterval(s.countdownTimer); s.countdownTimer=null; return; }
+    s.msRemaining-=100;
+    if(s.msRemaining<=0){ s.msRemaining=0; expireSlot(s); return; }
+    var card=document.getElementById("slot-"+s.id);
+    var bar=card.querySelector(".slot-bar");
+    bar.style.width=(s.msRemaining/SLOT_TIME*100)+"%";
+    bar.className="slot-bar "+barColor(s.msRemaining);
+    card.querySelector(".slot-customer").textContent = (s.msRemaining>8000)?"😊":"😰";
+  },100);
+}
+function expireSlot(s){
+  clearInterval(s.countdownTimer); s.countdownTimer=null;
+  s.state="expired"; s.flash=null;
+  addScore(-MISS_PENALTY, 0);
+  sfxExpire();
+  floatText(s, "-"+MISS_PENALTY, "", "bad");
+  render();
+  startExpiredTimer(s, EXPIRED_TIME);
+}
+function startExpiredTimer(s, remaining){
+  s.expiredStartedAt = now() - (EXPIRED_TIME - remaining);
+  s.expiredTimer=setTimeout(function(){
+    if(gameState.gameOver) return;
+    s.expiredTimer=null;
+    s.state="empty"; s.order=null;
+    render();
+    startRefill(s, REFILL_TIME);
+  }, remaining);
+}
+function startRefill(s, remaining){
+  s.refillStartedAt = now() - (REFILL_TIME - remaining);
+  s.refillTimer=setTimeout(function(){
+    if(gameState.gameOver) return;
+    s.refillTimer=null;
+    activateSlot(s);
+  }, remaining);
+}
+function flashSlot(s, type){
+  s.flash=type;
+  render();
+  s.flashTimer=setTimeout(function(){
+    if(gameState.gameOver) return;
+    s.flashTimer=null;
+    s.flash=null; s.state="empty"; s.order=null;
+    render();
+    startRefill(s, REFILL_TIME);
+  }, FLASH_TIME);
+}
+
+/* ===================== INTERACTIONS ===================== */
+function clickStation(i){
+  if(gameState.screen!=="game" || gameState.gameOver) return;
+  var s=gameState.stations[i];
+  if(s.state==="empty"){
+    sfxCookStart();
+    startCooking(s, s.cookFull);
+  } else if(s.state==="ready"){
+    if(gameState.bag.state==="empty" && gameState.heldItem===null){
+      if(s.idleTimer){ clearTimeout(s.idleTimer); s.idleTimer=null; }
+      s.state="held";
+      gameState.heldItem=s.type;
+      gameState.heldStation=i;
+      sfxPickup();
+      render();
+    }
+  } else if(s.state==="held"){
+    s.state="ready";
+    gameState.heldItem=null; gameState.heldStation=null;
+    startIdle(s, IDLE_TIME);
+    render();
+  }
+}
+function clickBag(){
+  if(gameState.screen!=="game" || gameState.gameOver) return;
+  if(gameState.heldItem!==null && gameState.bag.state==="empty"){
+    gameState.bag.state="loaded";
+    gameState.bag.item=gameState.heldItem;
+    var st=gameState.stations[gameState.heldStation];
+    if(st){ if(st.idleTimer){ clearTimeout(st.idleTimer); st.idleTimer=null; } st.state="empty"; }
+    gameState.heldItem=null; gameState.heldStation=null;
+    sfxBagLoad();
+    render();
+  }
+}
+function clickTrash(){
+  if(gameState.screen!=="game" || gameState.gameOver) return;
+  if(gameState.heldItem!==null){
+    var st=gameState.stations[gameState.heldStation];
+    if(st){ if(st.idleTimer){ clearTimeout(st.idleTimer); st.idleTimer=null; } st.state="empty"; }
+    gameState.heldItem=null; gameState.heldStation=null;
+    sfxDiscard(); flashTrash(); render();
+  } else if(gameState.bag.state==="loaded"){
+    gameState.bag.state="empty"; gameState.bag.item=null;
+    sfxDiscard(); flashTrash(); render();
+  }
+}
+function flashTrash(){
+  var t=document.getElementById("trash");
+  t.classList.remove("trash-flash"); void t.offsetWidth; t.classList.add("trash-flash");
+  clearTimeout(gameState.trashFlashTimer);
+  gameState.trashFlashTimer=setTimeout(function(){ t.classList.remove("trash-flash"); }, 300);
+}
+function clickSlot(i){
+  if(gameState.screen!=="game" || gameState.gameOver) return;
+  var s=gameState.slots[i];
+  if(gameState.bag.state!=="loaded") return;
+  if(s.state==="active"){
+    clearInterval(s.countdownTimer); s.countdownTimer=null;
+    if(gameState.bag.item===s.order){
+      var tip=computeTip(s.msRemaining);
+      addScore(100, tip);
+      sfxCorrect();
+      floatText(s, "+100", "+"+tip+" tip", "good");
+      flashSlot(s, "correct");
+    } else {
+      addScore(0,0);
+      sfxWrong();
+      floatText(s, "+0", "", "bad");
+      flashSlot(s, "wrong");
+    }
+    consumeBag();
+  } else if(s.state==="expired"){
+    if(gameState.bag.item===s.order){
+      if(s.expiredTimer){ clearTimeout(s.expiredTimer); s.expiredTimer=null; }
+      addScore(20,0);
+      sfxCorrectLate();
+      floatText(s, "+20", "", "good");
+      flashSlot(s, "correct");
+      consumeBag();
+    }
+  }
+}
+function consumeBag(){
+  gameState.bag.state="empty"; gameState.bag.item=null;
+  render();
+}
+
+/* ===================== GAME TIMER ===================== */
+function startGameTimer(remaining){
+  if(remaining===undefined) remaining=GAME_DURATION;
+  gameState.gameTimeRemaining=remaining;
+  updateGameTimeUI();
+  gameState.gameTimer=setInterval(function(){
+    gameState.gameTimeRemaining-=100;
+    if(gameState.gameTimeRemaining<=0){
+      gameState.gameTimeRemaining=0;
+      updateGameTimeUI();
+      endGame();
+      return;
+    }
+    updateGameTimeUI();
+  },100);
+}
+function updateGameTimeUI(){
+  var s=Math.ceil(gameState.gameTimeRemaining/1000);
+  var m=Math.floor(s/60), ss=s%60;
+  document.getElementById("time-val").textContent = m+":"+(ss<10?"0"+ss:ss);
+}
+
+/* ===================== LIFECYCLE ===================== */
+function cancelAllTimers(){
+  clearInterval(gameState.gameTimer); gameState.gameTimer=null;
+  (gameState.stations||[]).forEach(function(s){
+    clearInterval(s.cookTimer); clearTimeout(s.idleTimer);
+    s.cookTimer=null; s.idleTimer=null;
+  });
+  (gameState.slots||[]).forEach(function(s){
+    clearInterval(s.countdownTimer);
+    clearTimeout(s.refillTimer);
+    clearTimeout(s.expiredTimer);
+    clearTimeout(s.flashTimer);
+    s.countdownTimer=null; s.refillTimer=null; s.expiredTimer=null; s.flashTimer=null;
+  });
+  clearTimeout(gameState.trashFlashTimer); gameState.trashFlashTimer=null;
+}
+
+function startGame(){
+  resetGameState();
+  buildBoard();
+  document.getElementById("pause-btn").disabled=false;
+  document.getElementById("score-val").textContent="0";
+  resetStarsUI();
+  initAudio();
+  // only slot 0 starts immediately; the rest fill in via normal refill delay
+  var first=gameState.slots[0];
+  first.state="active"; first.order=randomOrder(); first.msRemaining=SLOT_TIME;
+  render();
+  startCountdown(first);
+  startRefill(gameState.slots[1], REFILL_TIME);
+  startRefill(gameState.slots[2], REFILL_TIME);
+  startGameTimer(GAME_DURATION);
+  setScreen("game");
+  sfxGameStart();
+  startMusic();
+}
+
+function endGame(){
+  gameState.gameOver=true;
+  cancelAllTimers();
+  stopMusic();
+  sfxGameEnd();
+  document.getElementById("pause-btn").disabled=true;
+  setTimeout(showEndScreen, 1000);
+}
+
+function showEndScreen(){
+  var best=loadBest();                       // read FIRST
+  var rating=ratingFor(gameState.score);
+  var isNewBest=gameState.score>best.score;   // compare
+
+  document.getElementById("end-score").textContent=gameState.score;
+  document.getElementById("end-tips").textContent=gameState.tips;
+
+  var starBox=document.getElementById("end-stars");
+  var msg=document.getElementById("end-msg");
+  var newbest=document.getElementById("end-newbest");
+  var lowBtns=document.getElementById("end-low-btns");
+  var normBtns=document.getElementById("end-norm-btns");
+
+  if(gameState.score<500){
+    starBox.style.display="none";
+    msg.style.display="block";
+    msg.textContent="So close! Keep practicing!";
+    newbest.style.display="none";
+    lowBtns.style.display="flex";
+    normBtns.style.display="none";
+  } else {
+    starBox.style.display="block";
+    starBox.textContent = repeatStr("⭐",rating)+repeatStr("☆",3-rating);
+    msg.style.display="none";
+    lowBtns.style.display="none";
+    normBtns.style.display="flex";
+    newbest.style.display = isNewBest ? "block" : "none";
+  }
+
+  if(isNewBest){ saveBest(gameState.score, rating); }   // write AFTER compare
+  setScreen("end");
+}
+function repeatStr(ch,n){ var o=""; for(var i=0;i<n;i++) o+=ch; return o; }
+
+/* ----- PAUSE ----- */
+function pauseGame(){
+  if(gameState.screen!=="game" || gameState.gameOver) return;
+  var t=now();
+  var pt={ stations:{}, slots:{} };
+
+  clearInterval(gameState.gameTimer); gameState.gameTimer=null;
+  pt.game=gameState.gameTimeRemaining;
+
+  gameState.stations.forEach(function(s){
+    if(s.state==="cooking"){
+      clearInterval(s.cookTimer); s.cookTimer=null;
+      pt.stations[s.id]={ kind:"cook", remaining:s.cookFull-(t-s.cookStartedAt) };
+    } else if(s.state==="ready"){
+      clearTimeout(s.idleTimer); s.idleTimer=null;
+      pt.stations[s.id]={ kind:"idle", remaining:IDLE_TIME-(t-s.idleStartedAt) };
+    }
+  });
+  gameState.slots.forEach(function(s){
+    var e={};
+    if(s.state==="active"){ clearInterval(s.countdownTimer); s.countdownTimer=null; e.countdown=s.msRemaining; }
+    if(s.refillTimer){ clearTimeout(s.refillTimer); e.refill=REFILL_TIME-(t-s.refillStartedAt); s.refillTimer=null; }
+    if(s.expiredTimer){ clearTimeout(s.expiredTimer); e.expired=EXPIRED_TIME-(t-s.expiredStartedAt); s.expiredTimer=null; }
+    var keys=Object.keys(e);
+    if(keys.length) pt.slots[s.id]=e;
+  });
+
+  gameState.pausedTimers=pt;
+  pauseAudio();
+  setScreen("pause");
+}
+function resumeGame(){
+  var pt=gameState.pausedTimers||{};
+  if(pt.game!=null) startGameTimer(pt.game);
+  var sk=pt.stations||{};
+  Object.keys(sk).forEach(function(id){
+    var s=gameState.stations[id], e=sk[id];
+    if(e.kind==="cook") startCooking(s, Math.max(0,e.remaining));
+    else if(e.kind==="idle") startIdle(s, Math.max(0,e.remaining));
+  });
+  var lk=pt.slots||{};
+  Object.keys(lk).forEach(function(id){
+    var s=gameState.slots[id], e=lk[id];
+    if(e.countdown!=null){ s.msRemaining=e.countdown; startCountdown(s); }
+    if(e.refill!=null){ startRefill(s, Math.max(0,e.refill)); }
+    if(e.expired!=null){ startExpiredTimer(s, Math.max(0,e.expired)); }
+  });
+  gameState.pausedTimers={};
+  resumeAudio();
+  setScreen("game");
+}
+function restartToStart(){
+  cancelAllTimers();
+  stopMusic();
+  if(audioCtx) audioCtx.suspend();
+  resetGameState();
+  refreshStartScreen();
+  setScreen("start");
+}
+
+function refreshStartScreen(){
+  var best=loadBest();
+  document.getElementById("start-best-score").textContent = best.score>0 ? best.score : "—";
+  document.getElementById("start-best-stars").textContent = best.stars>0 ? repeatStr("⭐",best.stars) : "—";
+}
+
+/* ===================== AUDIO ===================== */
+var audioCtx=null, masterGain=null, musicGain=null, sfxGain=null;
+var audioMuted=false;
+var musicScheduler=null, musicStep=0, musicNextTime=0;
+var _noiseBuf=null;
+
+var BPM=92, STEP=60/(BPM*4), MUSIC_STEPS=32;
+
+// C major pentatonic night-market groove — 2-bar 16th-note loop
+var BASS_FREQS=[65.41,0,0,0, 98.00,0,110.00,0, 82.41,0,0,0, 98.00,0,110.00,0,
+                98.00,0,0,0, 82.41,0,73.42,0,  65.41,0,0,0, 82.41,0,73.42,0];
+var MEL_FREQS =[0,0,329.63,0, 0,0,0,0, 0,0,392.00,0, 0,0,0,0,
+                0,0,440.00,0, 0,0,0,0, 0,0,392.00,0, 0,0,0,0];
+var KICK_ON={0:1,16:1}, SNARE_ON={8:1,24:1};
+
+function initAudio(){
+  if(audioCtx) return;
+  try{
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    var comp=audioCtx.createDynamicsCompressor();
+    comp.threshold.value=-14; comp.knee.value=6; comp.ratio.value=4;
+    comp.attack.value=0.003; comp.release.value=0.2;
+    comp.connect(audioCtx.destination);
+    masterGain=audioCtx.createGain(); masterGain.gain.value=audioMuted?0:1; masterGain.connect(comp);
+    musicGain=audioCtx.createGain(); musicGain.gain.value=0.28; musicGain.connect(masterGain);
+    sfxGain=audioCtx.createGain();   sfxGain.gain.value=0.65;   sfxGain.connect(masterGain);
+  }catch(e){ audioCtx=null; }
+}
+function toggleMute(){
+  audioMuted=!audioMuted;
+  if(masterGain) masterGain.gain.setTargetAtTime(audioMuted?0:1, audioCtx.currentTime, 0.05);
+  document.getElementById("mute-btn").textContent=audioMuted?"🔇":"🔊";
+}
+function getNoiseBuf(){
+  if(_noiseBuf) return _noiseBuf;
+  _noiseBuf=audioCtx.createBuffer(1,audioCtx.sampleRate,audioCtx.sampleRate);
+  var d=_noiseBuf.getChannelData(0);
+  for(var i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  return _noiseBuf;
+}
+
+/* helpers */
+function ao(freq,type,t,dur,vol,dest){
+  if(!audioCtx) return;
+  try{
+    var g=audioCtx.createGain(); g.gain.setValueAtTime(vol,t);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur); g.connect(dest||sfxGain);
+    var o=audioCtx.createOscillator(); o.type=type; o.frequency.setValueAtTime(freq,t);
+    o.connect(g); o.start(t); o.stop(t+dur+0.01);
+  }catch(e){}
+}
+function an(t,dur,vol,hp,dest){
+  if(!audioCtx) return;
+  try{
+    var src=audioCtx.createBufferSource(); src.buffer=getNoiseBuf();
+    var f=audioCtx.createBiquadFilter(); f.type="highpass"; f.frequency.value=hp||4000;
+    var g=audioCtx.createGain(); g.gain.setValueAtTime(vol,t);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    src.connect(f); f.connect(g); g.connect(dest||sfxGain);
+    src.start(t); src.stop(t+dur+0.01);
+  }catch(e){}
+}
+
+/* SFX */
+function sfxCookStart(){ if(!audioCtx)return; var t=audioCtx.currentTime; an(t,.18,.5,1200); ao(110,"sine",t,.12,.2); }
+function sfxReady()    { if(!audioCtx)return; var t=audioCtx.currentTime; ao(523.25,"sine",t,.28,.4); ao(659.25,"sine",t+.07,.3,.45); }
+function sfxPickup()   { if(!audioCtx)return; var t=audioCtx.currentTime; ao(392,"sine",t,.1,.3); ao(523.25,"sine",t+.06,.12,.28); }
+function sfxBagLoad()  { if(!audioCtx)return; var t=audioCtx.currentTime; an(t,.07,.3,600); ao(280,"sine",t,.09,.18); }
+function sfxCorrect()  { if(!audioCtx)return; var t=audioCtx.currentTime; [523.25,659.25,783.99].forEach(function(f,i){ ao(f,"sine",t+i*.07,.32,.5); }); }
+function sfxCorrectLate(){ if(!audioCtx)return; var t=audioCtx.currentTime; ao(440,"sine",t,.22,.35); ao(523.25,"sine",t+.09,.2,.3); }
+function sfxWrong()    { if(!audioCtx)return; var t=audioCtx.currentTime; ao(175,"sawtooth",t,.22,.4); ao(155,"square",t+.04,.18,.3); }
+function sfxExpire()   {
+  if(!audioCtx)return; var t=audioCtx.currentTime;
+  try{ var o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type="sine"; o.frequency.setValueAtTime(440,t); o.frequency.exponentialRampToValueAtTime(200,t+.45);
+    g.gain.setValueAtTime(.5,t); g.gain.exponentialRampToValueAtTime(.0001,t+.55);
+    o.connect(g); g.connect(sfxGain); o.start(t); o.stop(t+.6); }catch(e){}
+}
+function sfxDiscard()  { if(!audioCtx)return; var t=audioCtx.currentTime; an(t,.12,.35,300); ao(80,"sine",t,.14,.3); }
+function sfxStar()     { if(!audioCtx)return; var t=audioCtx.currentTime; [523.25,659.25,783.99,1046.5].forEach(function(f,i){ ao(f,"sine",t+i*.055,.28,.5); }); }
+function sfxGameStart(){ if(!audioCtx)return; var t=audioCtx.currentTime; [261.63,329.63,392.00,523.25].forEach(function(f,i){ ao(f,"sine",t+i*.09,.38,.5); }); }
+function sfxGameEnd()  { if(!audioCtx)return; var t=audioCtx.currentTime; [523.25,440.00,349.23,261.63].forEach(function(f,i){ ao(f,"sine",t+i*.11,.38,.5); }); }
+
+/* music sequencer */
+function schedStep(s,t){
+  if(KICK_ON[s]){
+    try{ var kg=audioCtx.createGain(); kg.connect(musicGain);
+      kg.gain.setValueAtTime(1,t); kg.gain.exponentialRampToValueAtTime(.0001,t+.5);
+      var ko=audioCtx.createOscillator();
+      ko.frequency.setValueAtTime(170,t); ko.frequency.exponentialRampToValueAtTime(38,t+.35);
+      ko.connect(kg); ko.start(t); ko.stop(t+.55); }catch(e){}
+  }
+  if(SNARE_ON[s]){ an(t,.13,.55,2500,musicGain); ao(220,"triangle",t,.08,.4,musicGain); }
+  if(s%2===0){
+    var hv=(s%8===0)?.28:(s%4===0)?.18:.1;
+    var hd=(s===6||s===22)?.18:.05;
+    an(t,hd,hv,11000,musicGain);
+  }
+  if(BASS_FREQS[s]>0){
+    try{ var bg=audioCtx.createGain(); bg.connect(musicGain);
+      bg.gain.setValueAtTime(.6,t); bg.gain.exponentialRampToValueAtTime(.0001,t+STEP*3.5);
+      var bf=audioCtx.createBiquadFilter(); bf.type="lowpass"; bf.frequency.value=340;
+      var bo=audioCtx.createOscillator(); bo.type="sawtooth"; bo.frequency.setValueAtTime(BASS_FREQS[s],t);
+      bo.connect(bf); bf.connect(bg); bo.start(t); bo.stop(t+STEP*4); }catch(e){}
+  }
+  if(MEL_FREQS[s]>0){
+    try{ var mg=audioCtx.createGain(); mg.connect(musicGain);
+      mg.gain.setValueAtTime(.3,t); mg.gain.exponentialRampToValueAtTime(.0001,t+STEP*5);
+      var mo=audioCtx.createOscillator(); mo.type="triangle"; mo.frequency.setValueAtTime(MEL_FREQS[s],t);
+      mo.connect(mg); mo.start(t); mo.stop(t+STEP*5+.05); }catch(e){}
+  }
+}
+function runMusicScheduler(){
+  if(!audioCtx||!musicGain) return;
+  while(musicNextTime < audioCtx.currentTime+0.25){
+    schedStep(musicStep, musicNextTime);
+    musicStep=(musicStep+1)%MUSIC_STEPS;
+    musicNextTime+=STEP;
+  }
+  musicScheduler=setTimeout(runMusicScheduler,100);
+}
+function startMusic(){ if(!audioCtx)return; clearTimeout(musicScheduler); musicStep=0; musicNextTime=audioCtx.currentTime+0.05; runMusicScheduler(); }
+function stopMusic(){  clearTimeout(musicScheduler); musicScheduler=null; }
+function pauseAudio(){ clearTimeout(musicScheduler); if(audioCtx) audioCtx.suspend(); }
+function resumeAudio(){ if(!audioCtx)return; audioCtx.resume().then(function(){ musicNextTime=audioCtx.currentTime+0.05; runMusicScheduler(); }); }
+
+/* ===================== WIRING ===================== */
+document.getElementById("mute-btn").addEventListener("click", toggleMute);
+document.getElementById("btn-start").addEventListener("click", startGame);
+document.getElementById("pause-btn").addEventListener("click", pauseGame);
+document.getElementById("btn-resume").addEventListener("click", resumeGame);
+document.getElementById("btn-restart").addEventListener("click", restartToStart);
+document.getElementById("btn-playagain").addEventListener("click", startGame);
+document.getElementById("btn-tryagain").addEventListener("click", startGame);
+document.getElementById("btn-menu").addEventListener("click", function(){ refreshStartScreen(); setScreen("start"); });
+document.getElementById("bag").addEventListener("click", clickBag);
+document.getElementById("trash").addEventListener("click", clickTrash);
+
+/* initial */
+resetGameState();
+buildBoard();
+refreshStartScreen();
+setScreen("start");
+</script>
+</body>
+</html>
