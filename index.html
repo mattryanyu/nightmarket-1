@@ -286,6 +286,11 @@
         <span class="val" id="start-best-stars">—</span>
       </div>
     </div>
+    <div style="display:flex;gap:22px;font-size:14px;color:var(--muted);margin-bottom:-8px;">
+      <span>⭐ 500 pts</span>
+      <span>⭐⭐ 1,500 pts</span>
+      <span>⭐⭐⭐ 3,000 pts</span>
+    </div>
     <button class="btn" id="btn-start">Start Game</button>
     <div class="subtitle" style="font-size:14px; max-width:520px;">
       This demo was created to test Opus 4.8 in building a functional game from a single prompt.
@@ -312,6 +317,7 @@
         <span class="stars">
           <span class="star star-unearned" id="star-0">☆</span><span class="star star-unearned" id="star-1">☆</span><span class="star star-unearned" id="star-2">☆</span>
         </span>
+        <span class="tb-label" id="next-star-label" style="margin-top:3px;">Next ⭐ at 500</span>
       </div>
       <div class="tb-block">
         <span class="tb-label">Time</span>
@@ -381,6 +387,7 @@ var REFILL_TIME   = 2000;
 var FLASH_TIME    = 600;
 var EXPIRED_TIME  = 600;
 var MISS_PENALTY  = 10;
+var STAR_THRESHOLDS = [500, 1500, 3000];
 
 var ITEMS = {
   rice:   { emoji:"🍚", label:"Fried Rice",   cook:5000  },
@@ -438,7 +445,7 @@ function randomOrder(){ return ORDER_POOL[Math.floor(Math.random()*ORDER_POOL.le
 function now(){ return performance.now(); }
 function computeTip(ms){ var s=ms/1000; return Math.min(50, Math.round(50*Math.floor(s)/25)); }
 function barColor(ms){ return ms>15000 ? "bar-green" : (ms>8000 ? "bar-yellow" : "bar-red"); }
-function ratingFor(score){ return score>=2000?3 : score>=1000?2 : score>=500?1 : 0; }
+function ratingFor(score){ return score>=STAR_THRESHOLDS[2]?3 : score>=STAR_THRESHOLDS[1]?2 : score>=STAR_THRESHOLDS[0]?1 : 0; }
 function setScreen(name){ gameState.screen=name; document.getElementById("app").className="screen-"+name; }
 
 /* ===================== STORAGE ===================== */
@@ -552,6 +559,11 @@ function updateStars(){
     }
   }
   gameState.stars=target;
+  var lbl=document.getElementById("next-star-label");
+  if(lbl){
+    if(target>=3){ lbl.textContent="Max ⭐⭐⭐"; }
+    else { lbl.textContent="Next ⭐ at "+STAR_THRESHOLDS[target]; }
+  }
 }
 function resetStarsUI(){
   for(var i=0;i<3;i++){
@@ -561,6 +573,8 @@ function resetStarsUI(){
     star.textContent="☆";
     star.style.animation="";
   }
+  var lbl=document.getElementById("next-star-label");
+  if(lbl) lbl.textContent="Next ⭐ at "+STAR_THRESHOLDS[0];
 }
 
 /* ===================== FLOAT TEXT ===================== */
