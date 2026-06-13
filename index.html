@@ -808,6 +808,7 @@ function startGame(){
   document.getElementById("score-val").textContent="0";
   resetStarsUI();
   initAudio();
+  if(audioCtx) audioCtx.resume();
   // only slot 0 starts immediately; the rest fill in via normal refill delay
   var first=gameState.slots[0];
   first.state="active"; first.order=randomOrder(); first.msRemaining=SLOT_TIME;
@@ -919,7 +920,6 @@ function resumeGame(){
 function restartToStart(){
   cancelAllTimers();
   stopMusic();
-  if(audioCtx) audioCtx.suspend();
   resetGameState();
   refreshStartScreen();
   setScreen("start");
