@@ -100,8 +100,9 @@
     background:var(--panel); border:1px solid #3a2415; border-radius:14px;
     padding:12px 20px;
   }
-  .tb-block{ display:flex; flex-direction:column; }
+  .tb-block{ display:flex; flex-direction:column; align-items:center; text-align:center; }
   .tb-label{ font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--muted);}
+  #next-star-label{ text-transform:none; letter-spacing:0; font-size:13px; white-space:nowrap; }
   .tb-value{ font-family:var(--font-display); font-size:30px; font-weight:800; line-height:1.05;
     font-variant-numeric:tabular-nums; letter-spacing:-.5px;}
   #score-val{ color:var(--yellow); }
@@ -308,18 +309,15 @@
   <!-- GAME -->
   <div id="game-screen" class="screen">
     <div class="topbar">
-      <div class="tb-block">
+      <div class="tb-block" style="align-items:flex-start;text-align:left;">
         <span class="tb-label">Score</span>
         <span class="tb-value" id="score-val">0</span>
       </div>
       <div class="tb-block">
-        <span class="tb-label">Stars</span>
-        <div style="display:flex;align-items:center;gap:12px;">
-          <span class="stars">
-            <span class="star star-unearned" id="star-0">☆</span><span class="star star-unearned" id="star-1">☆</span><span class="star star-unearned" id="star-2">☆</span>
-          </span>
-          <span id="next-star-label" style="font-size:20px;color:var(--muted);">Next ⭐ at 500</span>
-        </div>
+        <span class="tb-label" id="next-star-label">NEXT ⭐ AT 500</span>
+        <span class="stars">
+          <span class="star star-unearned" id="star-0">☆</span><span class="star star-unearned" id="star-1">☆</span><span class="star star-unearned" id="star-2">☆</span>
+        </span>
       </div>
       <div class="tb-block">
         <span class="tb-label">Time</span>
@@ -564,7 +562,7 @@ function updateStars(){
   var lbl=document.getElementById("next-star-label");
   if(lbl){
     if(target>=3){ lbl.textContent="Max ⭐⭐⭐"; }
-    else { lbl.textContent="Next ⭐ at "+STAR_THRESHOLDS[target]; }
+    else { lbl.textContent="NEXT ⭐ AT "+STAR_THRESHOLDS[target]; }
   }
 }
 function resetStarsUI(){
@@ -576,7 +574,7 @@ function resetStarsUI(){
     star.style.animation="";
   }
   var lbl=document.getElementById("next-star-label");
-  if(lbl) lbl.textContent="Next ⭐ at "+STAR_THRESHOLDS[0];
+  if(lbl) lbl.textContent="NEXT ⭐ AT "+STAR_THRESHOLDS[0];
 }
 
 /* ===================== FLOAT TEXT ===================== */
