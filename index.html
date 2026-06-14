@@ -823,11 +823,10 @@ function startGame(){
   resetStarsUI();
   initAudio();
   if(audioCtx) audioCtx.resume();
-  // only slot 0 starts immediately; the rest fill in via normal refill delay
-  var first=gameState.slots[0];
-  first.state="active"; first.order=randomOrder(); first.msRemaining=SLOT_TIME;
-  render();
-  startCountdown(first);
+  // small delay before first customer arrives
+  setTimeout(function(){
+    if(!gameState.gameOver) activateSlot(gameState.slots[0]);
+  }, 1000);
   enqueueRefill(gameState.slots[1]);
   enqueueRefill(gameState.slots[2]);
   startGameTimer(GAME_DURATION);
