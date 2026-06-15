@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=900">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Night Market — Street Food Rush</title>
 <link rel="icon" href="favicon-clr.svg" type="image/svg+xml">
 <meta property="og:image" content="nightmarket-1-og.jpg">
@@ -33,7 +33,6 @@
     color:var(--text);
     font-family:var(--font-body);
     -webkit-font-smoothing:antialiased;
-    min-width:900px;
     overflow-x:auto;
     user-select:none;
     touch-action:manipulation;
@@ -268,6 +267,54 @@
     text-shadow:0 0 18px rgba(255,210,74,.7); }
   #end-msg{ font-size:24px; color:var(--orange-bright); font-weight:700;}
   .btn-row{ display:flex; gap:18px; margin-top:14px; }
+  @media(max-width:600px){
+    /* game screen */
+    #game-screen{ padding:10px 10px 20px; gap:10px; }
+
+    /* topbar */
+    .topbar{ grid-template-columns:1fr 1fr 1fr auto; gap:8px; padding:8px 12px; }
+    .tb-label{ font-size:9px; letter-spacing:1px; }
+    #next-star-label{ font-size:10px; }
+    .tb-value{ font-size:20px; }
+    .stars{ font-size:20px; letter-spacing:2px; }
+    .pause-btn{ font-size:13px; padding:8px 10px; }
+    .mute-btn{ width:36px; }
+
+    /* stations */
+    .stations{ gap:8px; }
+    .station{ min-height:100px; padding:10px 6px 14px; }
+    .station-label{ font-size:10px; }
+    .station-emoji{ font-size:38px; }
+    .station-status{ font-size:20px; height:22px; }
+
+    /* center row */
+    .center-row{ gap:8px; }
+    .zone{ padding:10px; }
+    .zone-icon{ font-size:30px; }
+    .trash-zone{ width:auto; }
+    .bag{ width:auto; }
+
+    /* slots */
+    .slots{ gap:8px; }
+    .slot{ min-height:100px; padding:10px 6px 12px; }
+    .slot-item{ font-size:36px; height:44px; }
+    .slot-customer{ font-size:22px; height:28px; }
+
+    /* start screen */
+    #start-screen{ padding:30px 20px; gap:16px; }
+    .title{ font-size:44px; }
+    .subtitle{ font-size:16px; }
+    .menu-emojis{ font-size:36px; }
+    .best-box .val{ font-size:22px; }
+    .btn{ font-size:18px; padding:14px 28px; }
+
+    /* end screen */
+    #end-screen{ padding:30px 20px; gap:12px; }
+    .overlay-title{ font-size:34px; }
+    .end-stat{ font-size:16px; }
+    .end-stat b{ font-size:22px; }
+    #end-stars{ font-size:38px; }
+  }
 </style>
 </head>
 <body>
