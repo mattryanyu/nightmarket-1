@@ -288,9 +288,9 @@
       </div>
     </div>
     <div style="display:flex;gap:22px;font-size:14px;color:var(--muted);margin-bottom:-8px;">
-      <span>⭐ 500 pts</span>
-      <span>⭐⭐ 1,500 pts</span>
-      <span>⭐⭐⭐ 3,000 pts</span>
+      <span>⭐ 600 pts</span>
+      <span>⭐⭐ 1,800 pts</span>
+      <span>⭐⭐⭐ 3,600 pts</span>
     </div>
     <button class="btn" id="btn-start">Start Game</button>
     <div class="subtitle" style="font-size:14px; max-width:520px;">
@@ -362,8 +362,7 @@
     <div id="end-newbest">🏆 New Best!</div>
     <div id="end-stars">⭐⭐⭐</div>
     <div id="end-msg">So close! Keep practicing!</div>
-    <div class="end-stat">Score: <b id="end-score">0</b></div>
-    <div class="end-stat">Tips: <b id="end-tips">0</b></div>
+    <div class="end-stat"><b id="end-score">0</b> + <b id="end-tips">0</b> tips = <b id="end-total">0</b></div>
     <div class="btn-row" id="end-norm-btns">
       <button class="btn" id="btn-playagain">Play Again</button>
       <button class="btn secondary" id="btn-menu">Main Menu</button>
@@ -387,7 +386,7 @@ var REFILL_TIME   = 2000;
 var FLASH_TIME    = 600;
 var EXPIRED_TIME  = 600;
 var MISS_PENALTY  = 10;
-var STAR_THRESHOLDS = [500, 1500, 3000];
+var STAR_THRESHOLDS = [600, 1800, 3600];
 
 var ITEMS = {
   rice:   { emoji:"🍚", label:"Fried Rice",   cook:5000  },
@@ -543,11 +542,11 @@ function render(){
 function addScore(points, tip){
   gameState.score = Math.max(0, gameState.score + points);
   gameState.tips  += tip;
-  document.getElementById("score-val").textContent = gameState.score;
+  document.getElementById("score-val").textContent = gameState.score + gameState.tips;
   updateStars();
 }
 function updateStars(){
-  var target = ratingFor(gameState.score);
+  var target = ratingFor(gameState.score + gameState.tips);
   for(var i=0;i<3;i++){
     var star=document.getElementById("star-"+i);
     if(i<target && !star.classList.contains("star-earned")){
@@ -845,12 +844,14 @@ function endGame(){
 }
 
 function showEndScreen(){
-  var best=loadBest();                       // read FIRST
-  var rating=ratingFor(gameState.score);
-  var isNewBest=gameState.score>best.score;   // compare
+  var best=loadBest();
+  var finalScore=gameState.score+gameState.tips;
+  var rating=ratingFor(finalScore);
+  var isNewBest=finalScore>best.score;
 
   document.getElementById("end-score").textContent=gameState.score;
   document.getElementById("end-tips").textContent=gameState.tips;
+  document.getElementById("end-total").textContent=finalScore;
 
   var starBox=document.getElementById("end-stars");
   var msg=document.getElementById("end-msg");
@@ -858,7 +859,7 @@ function showEndScreen(){
   var lowBtns=document.getElementById("end-low-btns");
   var normBtns=document.getElementById("end-norm-btns");
 
-  if(gameState.score<500){
+  if(finalScore<500){
     starBox.style.display="none";
     msg.style.display="block";
     msg.textContent="So close! Keep practicing!";
@@ -874,7 +875,7 @@ function showEndScreen(){
     newbest.style.display = isNewBest ? "block" : "none";
   }
 
-  if(isNewBest){ saveBest(gameState.score, rating); }   // write AFTER compare
+  if(isNewBest){ saveBest(finalScore, rating); }
   setScreen("end");
 }
 function repeatStr(ch,n){ var o=""; for(var i=0;i<n;i++) o+=ch; return o; }
